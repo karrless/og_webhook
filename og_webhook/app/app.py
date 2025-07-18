@@ -50,17 +50,25 @@ async def vk_callback(request: Request):
         logger.debug(f"{message['from_id']}: {message['text']}\n")
 
         sticker_id = None
+        sticker_url = None
         attachments = message.get('attachments', [])
-        if attachments:
-            if attachments[0]['type'] == 'sticker':
-                sticker_id = attachments[0]['sticker']['sticker_id']
+        for att in attachments:
+            if att['type'] == 'sticker':
+                sticker_data = att['sticker']
+                sticker_id = sticker_data['sticker_id']
+                images = sticker_data.get('images', [])
+                if images:
+                    sticker_url = images[-1]['url']  # Самое качественное изображение
+                break
+
         buffer.append(
             {
                 "peer_id": message["peer_id"],
                 "from_id": message["from_id"],
                 "message": message["text"],
                 "date": message["date"],
-                "sticker_id": sticker_id 
+                "sticker_id": sticker_id,
+                "sticker_url": sticker_url
             }
         )
     return PlainTextResponse("ok")

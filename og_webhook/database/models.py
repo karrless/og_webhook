@@ -68,4 +68,7 @@ class Message(Base):
     peer_id: Mapped[int] = mapped_column(ForeignKey('chats.peer_id'), nullable=False)
     message: Mapped[str] = mapped_column(nullable=True)
     sticker_id: Mapped[int] = mapped_column(nullable=True) 
+    sticker_url: Mapped[str] = mapped_column(nullable=True)
     date: Mapped[int] = mapped_column(nullable=False)
+    user = relationship("User", back_populates=None)
+    chat = relationship("Chat", back_populates=None)
