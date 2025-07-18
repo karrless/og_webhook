@@ -8,7 +8,7 @@ from og_webhook.database.models import Message
 class Buffer:
     def __init__(self, session_factory):
         self.FLUSH_SIZE = int(os.getenv("FLUSH_SIZE"))
-        self.FLUSH_INTERVAL = int(os.getenv("FLUSH_INTEVAL"))
+        self.FLUSH_INTERVAL = int(os.getenv("FLUSH_INTERVAL"))
         
         self.data: list[dict] = []
         self.lock = Lock()

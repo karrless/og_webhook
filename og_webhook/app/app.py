@@ -39,12 +39,12 @@ async def vk_callback(request: Request):
         if message["peer_id"] not in chat_ids:
             return PlainTextResponse("ok")
 
-        logger.info(f"{message['from_id']}: {message['text']}\n")
+        logger.debug("{message['from_id']}: {message['text']}\n")
         buffer.append(
             {
                 "peer_id": message["peer_id"],
                 "from_id": message["from_id"],
-                "text": message["text"],
+                "message": message["text"],
                 "date": message["date"],
             }
         )

@@ -15,6 +15,6 @@ logger.add(
 def app_start():
     import uvicorn
     uvicorn.run(
-        "og_webhook.app:app", host=os.getenv("HOST"), port=int(os.getenv("PORT")), reload=True
+        "og_webhook.app:app", host=os.getenv("HOST"), port=int(os.getenv("PORT")), reload=False
     )
 
