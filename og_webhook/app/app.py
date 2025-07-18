@@ -5,6 +5,7 @@ from fastapi.responses import PlainTextResponse
 from loguru import logger
 from og_webhook.buffer import Buffer
 from og_webhook.database import chat_ids, s_factory
+from og_webhook.database.methods import check_user
 
 buffer = Buffer(s_factory)
 
@@ -39,7 +40,15 @@ async def vk_callback(request: Request):
         if message["peer_id"] not in chat_ids:
             return PlainTextResponse("ok")
 
-        logger.debug("{message['from_id']}: {message['text']}\n")
+        if message.get("action"):
+            with s_factory() as session:
+                logger.debug(f"Действие с пользователем {message['from_id']}")
+
+                await check_user(session, peer_id=message["from_id"])
+                return PlainTextResponse("ok")
+
+        logger.debug(f"{message['from_id']}: {message['text']}\n")
+        logger.debug(f"Attachments:{message.get('attachments')}")
         buffer.append(
             {
                 "peer_id": message["peer_id"],
