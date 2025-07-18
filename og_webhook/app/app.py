@@ -1,9 +1,23 @@
+from contextlib import asynccontextmanager
 import os
 from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 from loguru import logger
-from og_webhook.database import chat_ids
-app = FastAPI()
+from og_webhook.buffer import Buffer
+from og_webhook.database import chat_ids, s_factory
+
+buffer = Buffer(s_factory)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    buffer.start()
+    yield
+    buffer.flush()
+
+
+app = FastAPI(lifespan=lifespan)
+
 
 @app.get("/")
 async def heartbrake(request: Request):
@@ -17,14 +31,21 @@ async def vk_callback(request: Request):
     if data["type"] == "confirmation":
         return PlainTextResponse(os.getenv("CONFIRMATION_TOKEN"))
 
-    if data.get("secret") != os.getenv('SECRET_KEY'):
+    if data.get("secret") != os.getenv("SECRET_KEY"):
         return "not allowed"
 
     if data["type"] == "message_new":
         message = data["object"]["message"]
-        if message['peer_id'] not in chat_ids:
+        if message["peer_id"] not in chat_ids:
             return PlainTextResponse("ok")
-        
-        logger.info(f"{message['from_id']}: {message['text']}\n")
 
+        logger.info(f"{message['from_id']}: {message['text']}\n")
+        buffer.append(
+            {
+                "peer_id": message["peer_id"],
+                "from_id": message["from_id"],
+                "text": message["text"],
+                "date": message["date"],
+            }
+        )
     return PlainTextResponse("ok")
