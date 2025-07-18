@@ -48,14 +48,14 @@ async def vk_callback(request: Request):
                 if message['action']['member_id'] < 0:
 
                     logger.info(f"Бота добавили в {message['peer_id']}")
-                    await add_new_chat(message['peer_id'], message["peer_id"], chat_ids)
+                    await add_new_chat(message['peer_id'], chat_ids)
 
             return PlainTextResponse("ok")
 
         if message.get("action"):
             with s_factory() as session:
                 logger.debug(f"Действие с пользователем {message['from_id']}")
-                await check_user(session, message["from_id"], users)
+                await check_user(session, message["from_id"], message["peer_id"], users)
                 
                 session.commit()
             return PlainTextResponse("ok")
