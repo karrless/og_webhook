@@ -23,6 +23,6 @@ def app_start():
     import uvicorn
     connect_db()
     uvicorn.run(
-        "og_bots.app:app", host=os.environ("HOST"), port=os.environ("PORT"), reload=True
+        "og_webhook.app:app", host=os.getenv("HOST"), port=int(os.getenv("PORT")), reload=True
     )
 

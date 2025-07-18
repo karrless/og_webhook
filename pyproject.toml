@@ -13,10 +13,14 @@ dependencies = [
     "python-dotenv (>=1.1.1,<2.0.0)",
     "sqlalchemy (>=2.0.41,<3.0.0)",
     "sshtunnel (>=0.4.0,<0.5.0)",
-    "loguru (>=0.7.3,<0.8.0)"
+    "loguru (>=0.7.3,<0.8.0)",
+    "psycopg2 (>=2.9.10,<3.0.0)"
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+app = "og_webhook.main:app_start"

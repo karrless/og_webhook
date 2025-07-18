@@ -1,7 +1,12 @@
 import os
 from fastapi import FastAPI, Request
+from fastapi.responses import PlainTextResponse
 from loguru import logger
 app = FastAPI()
+
+@app.get("/")
+async def heartbrake(request: Request):
+    return "ok"
 
 
 @app.post("/")
@@ -9,13 +14,13 @@ async def vk_callback(request: Request):
     data = await request.json()
 
     if data["type"] == "confirmation":
-        return os.environ("CONFIRMATION_TOKEN")
+        return PlainTextResponse(os.getenv("CONFIRMATION_TOKEN"))
 
-    if data.get("secret") != os.environ('SECRET_KEY'):
+    if data.get("secret") != os.getenv('SECRET_KEY'):
         return "not allowed"
 
     if data["type"] == "message_new":
         message = data["object"]["message"]
-        logger.info(f"{message['from_id']}: {message['text']}\n")
+        logger.info(f"{message['peer_id']}: {message['text']}\n")
 
-    return "ok"
+    return PlainTextResponse("ok")

@@ -2,7 +2,7 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from og_bots.database import Base
+from og_webhook.database import Base
 
 
 class User(Base):
