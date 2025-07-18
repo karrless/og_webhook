@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from .database import Chat  
+from .models import Chat  
 
 def get_peer_ids_set(session: Session) -> set[int]:
     """
