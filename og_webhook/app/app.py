@@ -6,7 +6,7 @@ from fastapi.responses import PlainTextResponse
 from loguru import logger
 from og_webhook.buffer import Buffer
 from og_webhook.database import s_factory
-from og_webhook.database.methods import check_user, get_peer_ids_set, write_new_chat
+from og_webhook.database.methods import check_user, get_peer_ids_set, add_new_chat
 
 buffer = Buffer(s_factory)
 
@@ -46,10 +46,10 @@ async def vk_callback(request: Request):
         if message["peer_id"] not in chat_ids:
             if message.get("action"):
                 if message['action']['member_id'] < 0:
-                    with s_factory() as session:
-                        logger.info(f"Бота добавили в {message['peer_id']}")
-                        await write_new_chat(session, message['peer_id'], chat_ids)
-                        session.commit()
+
+                    logger.info(f"Бота добавили в {message['peer_id']}")
+                    await add_new_chat(message['peer_id'], message["peer_id"], chat_ids)
+
             return PlainTextResponse("ok")
 
         if message.get("action"):
@@ -62,6 +62,8 @@ async def vk_callback(request: Request):
 
         logger.debug(f"{message['peer_id']}-{message['from_id']}: {message['text']}\n")
 
+        await check_user(session, message["from_id"], message["peer_id"], users)
+        
         sticker_id = None
         sticker_url = None
         attachments = message.get('attachments', [])
@@ -73,7 +75,7 @@ async def vk_callback(request: Request):
                 if images:
                     sticker_url = images[-1]['url']  # Самое качественное изображение
                 break
-        users[message["peer_id"]].add(message["from_id"])
+        
         buffer.append(
             {
                 "peer_id": message["peer_id"],
