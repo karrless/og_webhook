@@ -1,13 +1,19 @@
+from collections import defaultdict
 from contextlib import asynccontextmanager
 import os
 from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 from loguru import logger
 from og_webhook.buffer import Buffer
-from og_webhook.database import chat_ids, s_factory
-from og_webhook.database.methods import check_user
+from og_webhook.database import s_factory
+from og_webhook.database.methods import check_user, get_peer_ids_set, write_new_chat
 
 buffer = Buffer(s_factory)
+
+chat_ids = set()
+users = defaultdict(set)
+with s_factory() as session:
+    chat_ids = get_peer_ids_set(session)
 
 
 @asynccontextmanager
@@ -42,9 +48,14 @@ async def vk_callback(request: Request):
 
         if message.get("action"):
             with s_factory() as session:
-                logger.debug(f"Действие с пользователем {message['from_id']}")
-
-                await check_user(session, peer_id=message["from_id"])
+                if message['action']['member_id'] < 0:
+                    logger.info(f"Бота добавили в {message['peer_id']}")
+                    await write_new_chat(session, message['peer_id'], chat_ids)
+                else:       
+                    logger.debug(f"Действие с пользователем {message['from_id']}")
+                    await check_user(session, message["from_id"], users)
+                
+                session.commit()
                 return PlainTextResponse("ok")
 
         logger.debug(f"{message['from_id']}: {message['text']}\n")
@@ -60,7 +71,7 @@ async def vk_callback(request: Request):
                 if images:
                     sticker_url = images[-1]['url']  # Самое качественное изображение
                 break
-
+        users[message["peer_id"]].add(message["from_id"])
         buffer.append(
             {
                 "peer_id": message["peer_id"],
