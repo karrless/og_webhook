@@ -19,7 +19,7 @@ async def check_user(session: Session, from_id, peer_id, users:dict[int, set]):
         if from_id in users[peer_id]:
             return
             
-    user = await api.users.get(user_ids=[from_id], fields=['screen_name'])[0]
+    user = (await api.users.get(user_ids=[from_id], fields=['screen_name']))[0]
     try:
         session.add(
             User(
@@ -45,9 +45,9 @@ async def write_new_chat(session: Session, peer_id, chat_ids):
     session.flush()
     chat_ids.add(peer_id)
     
-def add_new_chat(peer_id, chat_ids):
+async def add_new_chat(peer_id, chat_ids):
     chat_ids.add(peer_id)
     text = ('Привет! Я бот "Окей, Горный"!\n'
             'Назначь меня адмиинистратором и после этого введи команду /add [название направления], например:\n'
             '/add НПМС')
-    api.messages.send(peer_id=peer_id, random_id=random.randint(1, peer_id), message=text)
+    await api.messages.send(peer_id=peer_id, random_id=random.randint(1, peer_id), message=text)
