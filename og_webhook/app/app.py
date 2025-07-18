@@ -2,6 +2,7 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 from loguru import logger
+from og_webhook.database import chat_ids
 app = FastAPI()
 
 @app.get("/")
@@ -21,6 +22,9 @@ async def vk_callback(request: Request):
 
     if data["type"] == "message_new":
         message = data["object"]["message"]
-        logger.info(f"{message['peer_id']}: {message['text']}\n")
+        if message['peer_id'] not in chat_ids:
+            return PlainTextResponse("ok")
+        
+        logger.info(f"{message['from_id']}: {message['text']}\n")
 
     return PlainTextResponse("ok")

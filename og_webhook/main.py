@@ -12,16 +12,8 @@ logger.add(
 )
 
 
-def connect_db():
-    import og_webhook.database as db
-
-    db.create()
-    db.connect()
-
-
 def app_start():
     import uvicorn
-    connect_db()
     uvicorn.run(
         "og_webhook.app:app", host=os.getenv("HOST"), port=int(os.getenv("PORT")), reload=True
     )
