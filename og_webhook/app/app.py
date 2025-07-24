@@ -59,11 +59,12 @@ async def vk_callback(request: Request):
                 
                 session.commit()
             return PlainTextResponse("ok")
+        with s_factory() as session:
+            logger.debug(f"{message['peer_id']}-{message['from_id']}: {message['text']}\n")
 
-        logger.debug(f"{message['peer_id']}-{message['from_id']}: {message['text']}\n")
+            await check_user(session, message["from_id"], message["peer_id"], users)
+            session.commit()
 
-        await check_user(session, message["from_id"], message["peer_id"], users)
-        
         sticker_id = None
         sticker_url = None
         attachments = message.get('attachments', [])
