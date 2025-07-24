@@ -14,7 +14,7 @@ chat_ids = set()
 users = defaultdict(set)
 with s_factory() as session:
     chat_ids = get_peer_ids_set(session)
-
+logger.info(chat_ids)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

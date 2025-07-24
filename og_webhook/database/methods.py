@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from og_webhook.api import api
 from .models import Chat, User
 from sqlalchemy.exc import IntegrityError
-
+from sqlalchemy.dialects.postgresql import insert
 
 def get_peer_ids_set(session: Session) -> set[int]:
     """
@@ -18,19 +18,19 @@ async def check_user(session: Session, from_id, peer_id, users:dict[int, set]):
     if users.get(peer_id):
         if from_id in users[peer_id]:
             return
-            
+        
     user = (await api.users.get(user_ids=[from_id], fields=['screen_name']))[0]
-    try:
-        session.add(
-            User(
-                peer_id=from_id,
-                screen_name=user.screen_name,
-                name=user.first_name,
-                surname=user.last_name,
-            )
-        )
-    except IntegrityError:
-        session.rollback()
+    stmt = insert(User).values(
+    peer_id=from_id,
+    screen_name=user.screen_name,
+    name=user.first_name,
+    surname=user.last_name,
+    ).on_conflict_do_nothing(
+        index_elements=["peer_id"]  # поле, по которому проверяется конфликт
+    )
+
+    session.execute(stmt)
+
     users['peer_id'].add(from_id)
 
 

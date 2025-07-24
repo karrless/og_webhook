@@ -2,7 +2,7 @@ import asyncio
 import os
 from threading import Lock
 from loguru import logger
-from sqlalchemy import insert
+from sqlalchemy.dialects.postgresql import insert
 from og_webhook.database.models import Message
 
 
@@ -31,7 +31,7 @@ class Buffer:
         with self.lock:
             self._flush_locked()
     
-    def _flush_loked(self):
+    def _flush_locked(self):
         if not self.data:
             return
         
