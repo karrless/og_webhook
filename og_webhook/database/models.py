@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
@@ -63,7 +63,12 @@ class Chat(Base):
 
 class Message(Base):
     __tablename__="messages"
+    __table_args__ = (
+    UniqueConstraint("peer_id", "conversation_message_id", name="uix_peer_conv_msg"),
+)
+
     id: Mapped[int] = mapped_column(primary_key=True)
+    conversation_message_id:  Mapped[int] = mapped_column(nullable=False)
     from_id: Mapped[int] = mapped_column(ForeignKey('users.peer_id'), nullable=False)
     peer_id: Mapped[int] = mapped_column(ForeignKey('chats.peer_id'), nullable=False)
     message: Mapped[str] = mapped_column(nullable=True)

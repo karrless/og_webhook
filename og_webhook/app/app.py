@@ -78,6 +78,7 @@ async def vk_callback(request: Request):
         
         buffer.append(
             {
+                "conversation_message_id": message["conversation_message_id"],
                 "peer_id": message["peer_id"],
                 "from_id": message["from_id"],
                 "message": message["text"],
